@@ -3,6 +3,25 @@ export default [
         "MAKE": "TOYOTA",
         "MODEL": "Camry",
         "PLATENO": "2912 AJS",
+        "POLICY_NO": "PART-2893-IJAR-389348",
+        "VEHICLE_COLOR": "White",
+        "EFFECITVE_DATE": "2025-04-30",
+        "EXPIRY_DATE": "2026-04-30",
+        "MFG_YEAR": "2020",
+        "CHASIS_NUMBER": "DJ8932823JHHJWE",
+        "SUM_INSURED": 29366.272,
+        "NO_OF_SEATS": 5,
+        "PLATE_TEXT_1": "A",
+        "PLATE_TEXT_2": "J",
+        "PLATE_TEXT_3": "S",
+        "OWNER_ID": "2453198760",
+        "OWNER_NAME": "MOHAMMED SHAS",
+        "PRODUCT": "TPL"
+    },
+    {
+        "MAKE": "TOYOTA",
+        "MODEL": "Camry",
+        "PLATENO": "2912 AJS",
         "POLICY_NO": "PWIC-9384-IJAR-389483",
         "VEHICLE_COLOR": "White",
         "EFFECITVE_DATE": "2025-04-30",
@@ -15,6 +34,7 @@ export default [
         "PLATE_TEXT_2": "J",
         "PLATE_TEXT_3": "S",
         "OWNER_ID": "2453198760",
-        "OWNER_NAME": "MOHAMMED SHAS"
+        "OWNER_NAME": "MOHAMMED SHAS",
+        "PRODUCT": "COMP"
     }
 ]

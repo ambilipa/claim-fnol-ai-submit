@@ -3,6 +3,8 @@ export const router = Router();
 
 import { askPerplexity } from "./services/perplexity.service.js";
 import claim_form_model from "../masterData/claim_form_model.js";
+import {claimfnolCreateCaseData} from "./controllers/claimfnol.js"
+
 
 import multer from "multer";
 const upload = multer({ dest: "uploads/" });
@@ -17,5 +19,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   res.send(result);
 });
 
+
+router.get("/case_data",claimfnolCreateCaseData)
 
 export default router;

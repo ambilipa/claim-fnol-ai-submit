@@ -19,17 +19,17 @@ export default {
             "claimantPolicyNumber": "string"
     },
     "respondentParty": {
-            "RespondentSerial": "number",
-            "RespondentOwnerName": "string",
-            "RespondentOwnerID": "string",
-            "RespondentDOB": "YYYY-MM-DD",
-            "RespondentCarMake": "string",
-            "RespondentCarModel": "string",
-            "RespondentCarMfgYear": "YYYY",
-            "RespondentPlateNo": "string",
-            "RespondentChassisNo": "string",
-            "RespondentLiability": "number",
-            "RespondentInsuranceCompanyName": "string",
-            "RespondentPolicyNumber": "string"
+            "respondentSerial": "number",
+            "respondentOwnerName": "string",
+            "respondentOwnerID": "string",
+            "respondentDOB": "YYYY-MM-DD",
+            "respondentCarMake": "string",
+            "respondentCarModel": "string",
+            "respondentCarMfgYear": "YYYY",
+            "respondentPlateNo": "string",
+            "respondentChassisNo": "string",
+            "respondentLiability": "number",
+            "respondentInsuranceCompanyName": "string",
+            "respondentPolicyNumber": "string"
     }
 }

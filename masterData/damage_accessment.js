@@ -7,8 +7,8 @@ export default [
             "claimantCarMake": "TOYOTA",
             "claimantCarModel": "Camry",
             "claimantCarMfgYear": 2024,
-            "TotalCost": 101761,
-            "SparePartsInfo": {
+            "totalCost": 101761,
+            "sparePartsInfo": {
                 "SparePartDealer": "Spare Part Center - NYC",
                 "SparePartCost": 75966,
                 "SparePartDiscountPercent": 0,
