@@ -1,17 +1,17 @@
 import axios from "axios";
 import dotenv from "dotenv";
 import jsonExtractor from '../util/jsonExtractor.js';
-
+import fs from "fs";
 dotenv.config();
 
 const API_URL = "https://api.perplexity.ai/chat/completions";
 const API_KEY = process.env.PERPLEXITY_API_KEY;
 
-export const askPerplexity = async (input, prompt) => {
+export const askPerplexity = async (input, prompt, filePath) => {
   try {
 
-    // const fileBuffer = fs.readFileSync(file.path);   // read file from disk
-    // // const base64File = fileBuffer.toString("base64"); // convert to base64
+    const fileBuffer = filePath ? fs.readFileSync(filePath) : null;
+    const base64File = fileBuffer ? fileBuffer.toString("base64") : null; 
 
     const data = {
       model: 'sonar',
@@ -19,13 +19,12 @@ export const askPerplexity = async (input, prompt) => {
         {
           role: 'user',
           content: [
-            { type: 'text', text: input },
+            { type: 'text', text: JSON.stringify(input) },
             { type: 'text', text: prompt },
-            // {
-            //   type: 'file_url',
-            //   file_url: { url: base64File },  // raw Base64 string here
-            //   file_name: file.originalname    // keep original name
-            // }
+            ...(filePath ? [{
+              type: 'file_url',
+              file_url: { url: base64File }
+            }] : [])
           ]
         }
       ]

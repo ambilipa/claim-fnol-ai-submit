@@ -1,6 +1,8 @@
 import { Router } from "express";
 import multer from "multer"; // Add this import
 import { askPerplexity } from "./services/perplexity.service.js";
+import claim_form_model from "../masterData/claim_form_model.js";
+
 
 export const router = Router();
 
@@ -15,7 +17,10 @@ router.get("/ping", (req, res) => {
 
 router.post("/extract", askPerplexity);
 
-// router.post("/upload", upload.single("file"), askPerplexity);
+router.post("/upload", upload.single("file"), async (req, res) => {
+  const result = await askPerplexity(claim_form_model, "extract information in this document into the provided model structure and return only valid JSON.", req.file.path);
+  res.send(result);
+});
 
 
 // router.post("/get-policy-data",getPolicyData)
