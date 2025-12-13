@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer"; // Add this import
-import { askPerplexity } from "./perplexity.service.js";
+import { askPerplexity } from "./services/perplexity.service.js";
 
 export const router = Router();
 
@@ -13,8 +13,12 @@ router.get("/ping", (req, res) => {
 });
 
 
-router.post("/upload", upload.single("file"), askPerplexity);
+router.post("/extract", askPerplexity);
 
+// router.post("/upload", upload.single("file"), askPerplexity);
+
+
+// router.post("/get-policy-data",getPolicyData)
 
 // File upload route (NEW)
 // router.post("/ask-file", upload.single('file'), async (req, res) => {
