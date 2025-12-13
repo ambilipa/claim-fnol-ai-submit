@@ -17,11 +17,11 @@ export const askPerplexity = async (input, prompt, filePath) => {
       model: 'sonar',
       messages: [
         {
-          role: 'user',
+          role: 'tool',
           content: [
             { type: 'text', text: JSON.stringify(input) },
             { type: 'text', text: prompt },
-            ...(filePath ? [{
+            ...(base64File ? [{
               type: 'file_url',
               file_url: { url: base64File }
             }] : [])

@@ -3,7 +3,6 @@ import claim_form_model from "../../masterData/claim_form_model.js";
 import damage_accessment from "../../masterData/damage_accessment.js";
 import policy_data from "../../masterData/policy_data.js";
 import { EXTRACT_DOCUMENT, VALIDATE_DA_REPORT } from "../../masterData/promts.js";
-import spareparts_sources from "../../masterData/spareparts_sources.js";
 import { askPerplexity } from "../services/perplexity.service.js";
 import mock_extraction from '../../masterData/mock_extraction.js'
 
@@ -32,12 +31,14 @@ export async function claimfnolCreateCaseData(req, res) {
             referenceNumber : `REF-` + Math.floor(100000 + Math.random() * 900000),
             accidentInfo: accident_info[0].Accident_info,
             claimantParty: claim_party[0],
-            damageAccessment: damage_info[0],
+            damageAccessment: damage_info[0]?.caseDetails,
             interestInfo: policy_details_data[0],
             claim_type : extractedJSONForm.claimantParty.claimantChassisNo == extractedJSONForm.respondentParty.RespondentChassisNo ? "OD" : "TP"
         }
 
-        res.status(200).send(caseData);
+        const validateDA = await askPerplexity(caseData.damageAccessment, VALIDATE_DA_REPORT);
+
+        res.status(200).send(validateDA);
     } catch (err) {
         res.status(500).send(err);
     }
