@@ -1,6 +1,6 @@
 import axios from "axios";
 import dotenv from "dotenv";
-import jsonExtractor from '../util/jsonExtractor.js';
+import jsonExtractor from '../util/json_extractor.js';
 import fs from "fs";
 dotenv.config();
 
@@ -17,7 +17,7 @@ export const askPerplexity = async (input, prompt, filePath) => {
       model: 'sonar',
       messages: [
         {
-          role: 'tool',
+          role: 'user',
           content: [
             { type: 'text', text: JSON.stringify(input) },
             { type: 'text', text: prompt },

@@ -1,14 +1,16 @@
-import accident_report from "../../masterData/accident_report.js";
-import claim_form_model from "../../masterData/claim_form_model.js";
-import damage_accessment from "../../masterData/damage_accessment.js";
-import policy_data from "../../masterData/policy_data.js";
-import { EXTRACT_DOCUMENT, VALIDATE_DA_REPORT } from "../../masterData/promts.js";
-import { askPerplexity } from "../services/perplexity.service.js";
-import mock_extraction from '../../masterData/mock_extraction.js'
+import accident_report from "../master_data/accident_report.js";
+import claim_form_model from "../master_data/claim_form_model.js";
+import damage_accessment from "../master_data/damage_accessment.js";
+import policy_data from "../master_data/policy_data.js";
+import { EXTRACT_DOCUMENT, VALIDATE_DA_REPORT } from "../master_data/promts.js";
+import { askPerplexity } from "./services/perplexity.service.js";
+import mockExtraction from '../master_data/mock_extraction.js'
+import mockDA from '../master_data/mock_da_scores.js'
+import { evaluateSparePartsRisk } from "./rules.js";
 
 export async function claimfnolCreateCaseData(req, res) {
     try {
-        const extractedJSONForm = process.env.MOCK_EXTRACTION == 1 ? mock_extraction : (await askPerplexity(claim_form_model, EXTRACT_DOCUMENT, req.file.path));
+        const extractedJSONForm = process.env.MOCK_AI_RESPONSE == 1 ? mockExtraction : (await askPerplexity(claim_form_model, EXTRACT_DOCUMENT, req.file.path));
         
         let accident_info = accident_report.filter((report) => report.Accident_info.caseNumber == extractedJSONForm.accidentInfo.caseNumber)
         let claim_party = accident_info[0].Parties_Info.filter((party) => {
@@ -36,9 +38,12 @@ export async function claimfnolCreateCaseData(req, res) {
             claim_type : extractedJSONForm.claimantParty.claimantChassisNo == extractedJSONForm.respondentParty.RespondentChassisNo ? "OD" : "TP"
         }
 
-        const validateDA = await askPerplexity(caseData.damageAccessment, VALIDATE_DA_REPORT);
+        const DAScores = process.env.MOCK_AI_RESPONSE == 1 ? mockDA : (await askPerplexity(caseData.damageAccessment, VALIDATE_DA_REPORT));
+        if (!DAScores) throw new Error("Unable to fetch DA scores");
 
-        res.status(200).send(validateDA);
+        const scoreRuleResult = evaluateSparePartsRisk(DAScores);
+
+        res.status(200).send(scoreRuleResult);
     } catch (err) {
         res.status(500).send(err);
     }
