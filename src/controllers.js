@@ -10,7 +10,7 @@ import { evaluateSparePartsRisk } from "./rules.js";
 
 export async function claimfnolCreateCaseData(req, res) {
     try {
-        const extractedJSONForm = process.env.MOCK_AI_RESPONSE == 1 ? mockExtraction : (await askPerplexity(claim_form_model, EXTRACT_DOCUMENT, req.file.path));
+        const extractedJSONForm = process.env.MOCK_AI_RESPONSE == 1 ? mockExtraction : (await askPerplexity(claim_form_model, EXTRACT_DOCUMENT, req.file.buffer));
 
         let accident_info = accident_report.filter((report) => report.Accident_info.caseNumber == extractedJSONForm.accidentInfo.caseNumber)
         let claim_party = accident_info[0].Parties_Info.filter((party) => {

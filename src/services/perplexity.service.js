@@ -7,10 +7,10 @@ dotenv.config();
 const API_URL = "https://api.perplexity.ai/chat/completions";
 const API_KEY = process.env.PERPLEXITY_API_KEY;
 
-export const askPerplexity = async (input, prompt, filePath) => {
+export const askPerplexity = async (input, prompt, fileBuffer) => {
   try {
 
-    const fileBuffer = filePath ? fs.readFileSync(filePath) : null;
+    // const fileBuffer = filePath ? fs.readFileSync(filePath) : null;
     const base64File = fileBuffer ? fileBuffer.toString("base64") : null; 
 
     const data = {
