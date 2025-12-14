@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Claim Submission</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-image: url("claim_form.svg");
+            background-repeat: no-repeat;
+            background-position: center;
+            display: flex;
+            align-items: start;
+            justify-content: start;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .card {
+            margin-top: 15vh;
+            margin-left: 25vh;
+            height: 30vh;
+            background: #ffffff;
+            padding: 24px 28px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        form {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+        }
+
+        h1 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: #fff;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .success {
+            display: none;
+            margin-top: 10px;
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #ecfdf5;
+            color: #065f46;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .upload-doc {
+            background-color: white;
+            border: 2px solid rgba(0, 153, 255, 0.774);
+            color: rgba(0, 0, 0, 0.548);
+            padding: 10px 15px;
+            border-radius: 10px;
+        }
+
+        #spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>Claim Form Submission Portal</h1>
+
+        <div class="success" id="successMsg">
+            ✅ Claim Submitted Successfully
+        </div>
+
+        <form id="claimForm">
+            <label class="upload-doc"
+                style="cursor: pointer; display: flex; align-items: center; justify-content: center;" for="file">
+                <span id="fileLabelText">Select Attachment</span>
+                <img style="margin-left: 10px;" width="25px" height="auto" src="upload.png" alt="">
+            </label>
+            <input hidden type="file" id="file" name="file" required />
+
+            <!-- <button  type="submit">Submit Form <span id="spinner" style="display:none; margin-left:10px;">⏳</span></button> -->
+            <button style="margin-top: 10px;" type="submit" id="submitBtn">
+                <span id="btnText">Submit Form</span>
+                <span id="spinner" style="display:none; margin-left:10px;">⏳</span>
+            </button>
+
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('claimForm');
+        const successMsg = document.getElementById('successMsg');
+        const fileInput = document.getElementById('file');
+        const fileLabelText = document.getElementById('fileLabelText');
+        const submitBtn = document.getElementById("submitBtn");
+        const btnText = document.getElementById("btnText");
+        const spinner = document.getElementById("spinner");
+        const defaultLabel = 'Select Attachment';
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault(); // stop normal submission
+
+            if (!fileInput.files.length) return;
+
+            // Show spinner + disable button
+            submitBtn.disabled = true;
+            btnText.textContent = "Uploading...";
+            spinner.style.display = "inline-block";
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(form.action, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error("Upload failed");
+
+                // Restore button and show success
+                form.reset();
+                fileLabelText.textContent = defaultLabel;
+                successMsg.style.display = "block";
+
+            } catch (err) {
+                console.error(err);
+                successMsg.textContent = "❌ Something went wrong!";
+                successMsg.style.display = "block";
+            }
+
+            // Hide spinner and restore button
+            submitBtn.disabled = false;
+            btnText.textContent = "Submit Form";
+            spinner.style.display = "none";
+        });
+
+        // Update label when selecting a file
+        fileInput.addEventListener('change', function () {
+            fileLabelText.textContent = this.files.length ? this.files[0].name : defaultLabel;
+        });
+    </script>
+
+
+</body>
+
+</html>

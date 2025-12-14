@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --watch src server.js",
+    "dev": "nodemon --watch . --watch src server.js",
     "build": "tsc",
     "start": "node dist/server.js"
   },

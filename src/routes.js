@@ -7,6 +7,6 @@ const upload = multer({ dest: "uploads/" });
 import { claimfnolCreateCaseData } from "./controllers.js";
 
 //routes
-router.post("/fnol", upload.single("file"), claimfnolCreateCaseData);
+router.post("/submit-claim", upload.single("file"), claimfnolCreateCaseData);
 
 export default router;
