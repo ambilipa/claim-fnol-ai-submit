@@ -23,8 +23,8 @@ export async function claimfnolCreateCaseData(req, res) {
 
         let damage_info = damage_accessment.filter((obj) => obj.caseDetails.accidentNo == extractedJSONForm.accidentInfo.caseNumber);
         let policy_details_data = policy_data.filter((obj) =>
-            obj.POLICY_NO === extractedJSONForm.respondentParty.RespondentPolicyNumber &&
-            obj.CHASIS_NUMBER === extractedJSONForm.respondentParty.RespondentChassisNo)
+            obj.POLICY_NO === extractedJSONForm.respondentParty.respondentPolicyNumber &&
+            obj.CHASIS_NUMBER === extractedJSONForm.respondentParty.respondentChassisNo)
         if (policy_details_data < 1) {
             throw new Error('No policy for the RespondentParty')
         }
@@ -43,7 +43,7 @@ export async function claimfnolCreateCaseData(req, res) {
             claimantParty: claim_party[0],
             damageAccessment: damage_info[0]?.caseDetails,
             interestInfo: policy_details_data[0],
-            claim_type: extractedJSONForm.claimantParty.claimantChassisNo == extractedJSONForm.respondentParty.RespondentChassisNo ? "OD" : "TP"
+            claim_type: extractedJSONForm.claimantParty.claimantChassisNo == extractedJSONForm.respondentParty.respondentChassisNo ? "OD" : "TP"
         }
 
         const DAScores = process.env.MOCK_AI_RESPONSE == 1 ? mockDA : (await askPerplexity(caseData.damageAccessment, VALIDATE_DA_REPORT));
