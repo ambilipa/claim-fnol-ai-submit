@@ -4,8 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --watch . --watch src server.js",
-    "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "@perplexity-ai/perplexity_ai": "^0.18.1",
