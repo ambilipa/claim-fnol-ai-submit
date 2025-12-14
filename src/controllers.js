@@ -11,7 +11,7 @@ import { evaluateSparePartsRisk } from "./rules.js";
 export async function claimfnolCreateCaseData(req, res) {
     try {
         const extractedJSONForm = process.env.MOCK_AI_RESPONSE == 1 ? mockExtraction : (await askPerplexity(claim_form_model, EXTRACT_DOCUMENT, req.file.path));
-        
+
         let accident_info = accident_report.filter((report) => report.Accident_info.caseNumber == extractedJSONForm.accidentInfo.caseNumber)
         let claim_party = accident_info[0].Parties_Info.filter((party) => {
             return party.claimantSerial == extractedJSONForm.claimantParty.claimantSerial;
@@ -29,13 +29,21 @@ export async function claimfnolCreateCaseData(req, res) {
             throw new Error('No policy for the RespondentParty')
         }
 
+        const policy_effective = new Date(policy_details_data[0]?.EFFECITVE_DATE);
+        const policy_expiry = new Date(policy_details_data[0]?.EXPIRY_DATE);
+        const cause_loss_date = new Date(accident_info[0].Accident_info?.callDate);
+
+        if (cause_loss_date < policy_effective || cause_loss_date > policy_expiry) {
+            throw new Error("Cause of loss occurred outside the policy coverage period")
+        }
+
         let caseData = {
-            referenceNumber : `REF-` + Math.floor(100000 + Math.random() * 900000),
+            referenceNumber: `REF-` + Math.floor(100000 + Math.random() * 900000),
             accidentInfo: accident_info[0].Accident_info,
             claimantParty: claim_party[0],
             damageAccessment: damage_info[0]?.caseDetails,
             interestInfo: policy_details_data[0],
-            claim_type : extractedJSONForm.claimantParty.claimantChassisNo == extractedJSONForm.respondentParty.RespondentChassisNo ? "OD" : "TP"
+            claim_type: extractedJSONForm.claimantParty.claimantChassisNo == extractedJSONForm.respondentParty.RespondentChassisNo ? "OD" : "TP"
         }
 
         const DAScores = process.env.MOCK_AI_RESPONSE == 1 ? mockDA : (await askPerplexity(caseData.damageAccessment, VALIDATE_DA_REPORT));
