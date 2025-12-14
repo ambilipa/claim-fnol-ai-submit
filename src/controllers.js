@@ -51,7 +51,10 @@ export async function claimfnolCreateCaseData(req, res) {
 
         const scoreRuleResult = evaluateSparePartsRisk(DAScores);
 
-        res.status(200).send(scoreRuleResult);
+        caseData.sparePartScores = DAScores;
+        caseData.scoreDA = scoreRuleResult;
+
+        res.status(200).send(caseData);
     } catch (err) {
         res.status(500).send(err);
     }

@@ -10,37 +10,39 @@
             font-family: Arial, Helvetica, sans-serif;
             background-image: url("claim_form.svg");
             background-repeat: no-repeat;
-            background-position: center;
+            background-position: top;
+            background-size: cover;
             display: flex;
-            align-items: start;
-            justify-content: start;
-            height: 100vh;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
             margin: 0;
+            padding: 0;
         }
 
         .card {
-            margin-top: 15vh;
+            margin-top: 20vh;
             margin-left: 25vh;
-            height: 30vh;
             background: #ffffff;
-            padding: 24px 28px;
+            padding: 5px 30px;
             border-radius: 12px;
             width: 100%;
+            height: 35vh;
             max-width: 420px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-evenly;
+            padding: 10px 30px;
         }
 
         form {
-            height: 100%;
             width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-evenly;
+            justify-content: space-between;
         }
 
         h1 {
@@ -109,6 +111,61 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* Styles for generated claim report */
+        #claimReportContainer {
+            display: none; /* shown after we have data */
+            width: 90%;
+            margin: 24px auto 40px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            font-family: Arial, sans-serif;
+        }
+
+        #claimReportContainer h2 {
+            margin-top: 0;
+        }
+
+        .section-title {
+            margin-top: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 5px;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+            gap: 16px;
+        }
+
+        .item-key {
+            font-weight: bold;
+            color: #555;
+            flex: 0 0 40%;
+            word-break: break-word;
+        }
+
+        .item-value {
+            color: #222;
+            flex: 1;
+            text-align: right;
+            word-break: break-word;
+        }
+
+        .spare-part-box {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            background: #f7faff;
+            border: 1px solid #d6e4ff;
+        }
     </style>
 </head>
 
@@ -120,7 +177,8 @@
             ✅ Claim Submitted Successfully
         </div>
 
-        <form id="claimForm">
+        <!-- IMPORTANT: action should match your Express POST route -->
+        <form id="claimForm" action="/submit-claim" method="post" enctype="multipart/form-data">
             <label class="upload-doc"
                 style="cursor: pointer; display: flex; align-items: center; justify-content: center;" for="file">
                 <span id="fileLabelText">Select Attachment</span>
@@ -128,13 +186,16 @@
             </label>
             <input hidden type="file" id="file" name="file" required />
 
-            <!-- <button  type="submit">Submit Form <span id="spinner" style="display:none; margin-left:10px;">⏳</span></button> -->
             <button style="margin-top: 10px;" type="submit" id="submitBtn">
                 <span id="btnText">Submit Form</span>
                 <span id="spinner" style="display:none; margin-left:10px;">⏳</span>
             </button>
-
         </form>
+    </div>
+
+    <div style="margin-top: 5vh;" id="claimReportContainer">
+        <h2>Claim Details</h2>
+        <div id="reportContent"></div>
     </div>
 
     <script>
@@ -145,10 +206,11 @@
         const submitBtn = document.getElementById("submitBtn");
         const btnText = document.getElementById("btnText");
         const spinner = document.getElementById("spinner");
+        const reportContainer = document.getElementById("claimReportContainer");
         const defaultLabel = 'Select Attachment';
 
         form.addEventListener('submit', async function (e) {
-            e.preventDefault(); // stop normal submission
+            e.preventDefault(); // stop normal submission / redirect
 
             if (!fileInput.files.length) return;
 
@@ -157,20 +219,34 @@
             btnText.textContent = "Uploading...";
             spinner.style.display = "inline-block";
 
-            const formData = new FormData(form);
+            // You can use new FormData(form) if you add more inputs later
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
 
             try {
-                const response = await fetch(form.action, {
+                const url = form.getAttribute('action') || '/submit-claim';
+
+                const response = await fetch(url, {
                     method: "POST",
                     body: formData
                 });
 
-                if (!response.ok) throw new Error("Upload failed");
+                if (!response.ok) {
+                    throw new Error("Upload failed: " + response.status);
+                }
 
-                // Restore button and show success
+                // Parse JSON from backend
+                const data = await response.json();
+                console.log("Claim response:", data);
+
+                // Reset UI state
                 form.reset();
                 fileLabelText.textContent = defaultLabel;
+                successMsg.textContent = '✅ Claim Submitted Successfully';
                 successMsg.style.display = "block";
+
+                // Render the claim details UI
+                displayClaimReport(data);
 
             } catch (err) {
                 console.error(err);
@@ -188,9 +264,186 @@
         fileInput.addEventListener('change', function () {
             fileLabelText.textContent = this.files.length ? this.files[0].name : defaultLabel;
         });
+
+        // ---------- Dynamic rendering logic ----------
+
+        function renderSection(title, container) {
+            const section = document.createElement("div");
+            section.innerHTML = `<div class='section-title'>${title}</div>`;
+            container.appendChild(section);
+            return section;
+        }
+
+        function renderObject(obj, container) {
+            Object.entries(obj).forEach(([key, value]) => {
+                // Format key → e.g. "carMake" → "Car Make"
+                const label = key
+                    .replace(/([A-Z])/g, " $1")
+                    .replace(/^./, s => s.toUpperCase());
+
+                if (Array.isArray(value)) {
+                    // Array Rendering (e.g., SparePartList)
+                    const section = renderSection(label, container);
+                    value.forEach((item, index) => {
+                        const box = document.createElement("div");
+                        box.className = "spare-part-box";
+                        box.innerHTML = `<b>Item ${index + 1}</b>`;
+                        section.appendChild(box);
+                        renderObject(item, box);
+                    });
+
+                } else if (typeof value === "object" && value !== null) {
+                    // Nested object (e.g., accidentInfo, claimantParty)
+                    const section = renderSection(label, container);
+                    renderObject(value, section);
+
+                } else {
+                    // Simple field
+                    const row = document.createElement("div");
+                    row.className = "item-row";
+                    row.innerHTML = `
+                        <div class='item-key'>${label}</div>
+                        <div class='item-value'>${value}</div>
+                    `;
+                    container.appendChild(row);
+                }
+            });
+        }
+
+        function displayClaimReport(data) {
+            const container = document.getElementById("reportContent");
+            container.innerHTML = ""; // Clear old data
+
+            renderObject(data, container);
+
+            // Show container now that we have data
+            reportContainer.style.display = "block";
+
+            // Auto-scroll to the report
+            setTimeout(() => {
+                const top = reportContainer.offsetTop - 20;
+                window.scrollTo({
+                    top,
+                    behavior: "smooth"
+                });
+            }, 200);
+        }
+
+        // ---------- For quick local testing without backend ----------
+        // You can uncomment this block and paste your JSON directly to see the rendering.
+        /*
+        const mock = {
+            "referenceNumber": "REF-396360",
+            "accidentInfo": {
+                "caseNumber": "AR1505253522",
+                "surveyorName": "Fa.alshammri",
+                "callDate": "2025-12-12",
+                "callTime": "24:30",
+                "location": "Zone A",
+                "LocationCoordinates": "24.7792073,46.8516895",
+                "city": "Riyadh",
+                "AccidentDescription": "Break down"
+            },
+            "claimantParty": {
+                "ownerName": "Mohammed Shas",
+                "gender": "male",
+                "licenseNo": 2453198760,
+                "licenseType": "Private License",
+                "phoneNo": "7356641555",
+                "age": 23,
+                "nationality": "India",
+                "dob": "2002-05-16",
+                "carMake": "TOYOTA",
+                "carModel": "Van",
+                "carMfgYear": 2024,
+                "plateNo": "5476 AJS",
+                "chassisNo": "JE4LZ21W9EZ701470",
+                "liability": 100,
+                "ownerID": 2453198760,
+                "insuranceCompanyName": "ACO Cooperative Insurance",
+                "policyNumber": "P0624-SME-IJAR-00093236",
+                "claimantSerial": 1
+            },
+            "damageAccessment": {
+                "caseNumber": "DA2101251840",
+                "accidentNo": "AR1505253522",
+                "claimantSerial": 1,
+                "claimantCarMake": "TOYOTA",
+                "claimantCarModel": "Camry",
+                "claimantCarMfgYear": 2024,
+                "totalCost": 101761,
+                "sparePartsInfo": {
+                    "SparePartDealer": "Spare Part Center - NYC",
+                    "SparePartCost": 75966,
+                    "SparePartDiscountPercent": 0,
+                    "SparePartFinalCost": 75966,
+                    "SparePartList": [
+                        {
+                            "SparePartName": "Rear Bumper Reinforcement (Left)",
+                            "IsOriginal": "false",
+                            "Quantity": 1,
+                            "Price": 53350,
+                            "Discount": 25,
+                            "AfterDiscount": 40013
+                        },
+                        {
+                            "SparePartName": "Rear Bumper Bracket Left",
+                            "IsOriginal": "false",
+                            "Quantity": 1,
+                            "Price": 3454,
+                            "Discount": 25,
+                            "AfterDiscount": 2591
+                        },
+                        {
+                            "SparePartName": "Rear Bumper Reflector Left",
+                            "IsOriginal": "false",
+                            "Quantity": 1,
+                            "Price": 11924,
+                            "Discount": 25,
+                            "AfterDiscount": 8943
+                        },
+                        {
+                            "SparePartName": "Rear Bumper Parking Sensor",
+                            "IsOriginal": "false",
+                            "Quantity": 1,
+                            "Price": 32560,
+                            "Discount": 25,
+                            "AfterDiscount": 24420
+                        }
+                    ]
+                }
+            },
+            "interestInfo": {
+                "MAKE": "TOYOTA",
+                "MODEL": "Camry",
+                "PLATENO": "2912 AJS",
+                "POLICY_NO": "PART-2893-IJAR-389348",
+                "VEHICLE_COLOR": "White",
+                "EFFECITVE_DATE": "2025-04-30",
+                "EXPIRY_DATE": "2026-04-30",
+                "MFG_YEAR": "2020",
+                "CHASIS_NUMBER": "DJ8932823JHHJWE",
+                "SUM_INSURED": 29366.272,
+                "NO_OF_SEATS": 5,
+                "PLATE_TEXT_1": "A",
+                "PLATE_TEXT_2": "J",
+                "PLATE_TEXT_3": "S",
+                "OWNER_ID": "2453198760",
+                "OWNER_NAME": "MOHAMMED SHAS",
+                "PRODUCT": "TPL"
+            },
+            "claim_type": "TP",
+            "scoreDA": {
+                "itemCount": 4,
+                "totalRedScore": 27.5,
+                "maxPossibleScore": 40,
+                "riskPercentage": 68.75,
+                "riskLevel": "HIGH"
+            }
+        };
+        // displayClaimReport(mock);
+        */
     </script>
-
-
 </body>
 
 </html>
